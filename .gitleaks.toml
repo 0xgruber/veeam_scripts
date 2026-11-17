@@ -14,7 +14,7 @@ description = "Password/secret/token assigned a quoted literal"
 regex = '''(?i)\$?\w*(password|passwd|pwd|secret|apikey|api_key|token|credential)\w*\s*=\s*["'][^"']{8,}["']'''
 tags = ["credential", "script", "powershell"]
 
-  [[rules.allowlist]]
+  [rules.allowlist]
   stopwords = ["example", "sample", "placeholder", "xxxxx", "changeme", "change-me", "your-password", "yourpassword", "please-change", "dummy", "todo", "redacted"]
 
 # Plaintext passed directly to a secret-style parameter
@@ -24,7 +24,7 @@ description = "Quoted literal passed to -Token/-Password style parameter"
 regex = '''(?i)-(?:password|pwd|secret|apikey|api-key|token|credential)\s+["'][^"']{8,}["']'''
 tags = ["credential", "script", "powershell"]
 
-  [[rules.allowlist]]
+  [rules.allowlist]
   stopwords = ["example", "sample", "placeholder", "xxxxx", "changeme", "change-me", "your-password", "yourpassword", "please-change", "dummy", "todo", "redacted"]
 
 # ConvertTo-SecureString fed a plaintext literal
