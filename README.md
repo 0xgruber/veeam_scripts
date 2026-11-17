@@ -44,6 +44,20 @@ $env:NO_COLOR = '1'
 .\Manage-VeeamServices.ps1 -Stop
 ```
 
+## Exit codes
+
+`Manage-VeeamServices.ps1` reports its outcome through the process exit code, so it is safe to use from CI pipelines, scheduled tasks, and wrapper scripts:
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | All requested operations succeeded; also returned for `-Help` and when no Veeam services are found (nothing to do is not a failure) |
+| `1` | One or more operations failed (check the `[FAIL]` entries), or conflicting parameters were supplied (e.g. `-Enable -Disable`) |
+
+```powershell
+.\Manage-VeeamServices.ps1 -Stop -Disable
+if ($LASTEXITCODE -ne 0) { throw "Veeam services were not fully stopped/disabled." }
+```
+
 ## Requirements
 
 - Windows with PowerShell 5.1+

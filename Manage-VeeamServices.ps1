@@ -52,9 +52,13 @@ function Write-OperationStatus {
     # Fixed-width action column keeps all status tags aligned.
     Write-Host ("  -> {0}" -f ("{0}..." -f $Action).PadRight(30)) -NoNewline
 
-    if (@($Errors).Count -gt 0) {
+    # Null-safe: @($null) is a one-element array in PowerShell, so filter out $null
+    # entries before counting (an untouched -ErrorVariable must not read as a failure).
+    $errorList = @($Errors | Where-Object { $null -ne $_ })
+
+    if ($errorList.Count -gt 0) {
         Write-Status -Text '[FAIL]' -Type Error
-        foreach ($err in @($Errors)) {
+        foreach ($err in $errorList) {
             Write-Status -Text ("          {0}" -f $err.Exception.Message) -Type Error
         }
         $script:failedOps++
@@ -93,19 +97,19 @@ EXAMPLES
 "@
 if ($Help -or (-not $Enable -and -not $Disable -and -not $Start -and -not $Stop)) {
     Write-Status -Text $helpText -Type Info
-    exit
+    exit 0
 }
 
 
 # 2. Validate conflicting parameters
 if ($Enable -and $Disable) {
     Write-Warning "You cannot specify both -Enable and -Disable."
-    exit
+    exit 1
 }
 
 if ($Start -and $Stop) {
     Write-Warning "You cannot specify both -Start and -Stop."
-    exit
+    exit 1
 }
 
 # 3. Find Veeam services
@@ -113,7 +117,8 @@ $veeamServices = Get-Service -Name "Veeam*" -ErrorAction SilentlyContinue
 
 if (-not $veeamServices) {
     Write-Status -Text "No Veeam services found on this system (no action taken)." -Type Warning
-    exit
+    # Nothing to do is not a failure; automation can treat 0 as "nothing needed changing".
+    exit 0
 }
 
 Write-Status -Text "Processing $($veeamServices.Count) Veeam services..." -Type Info
@@ -154,9 +159,12 @@ $veeamServices | ForEach-Object {
 }
 
 # 5. Summary
+# Exit codes: 0 = success (or nothing to do), 1 = one or more operations failed.
 if ($script:failedOps -gt 0) {
     Write-Status -Text ("Operations completed with {0} failed operation(s). See the [FAIL] entries above." -f $script:failedOps) -Type Warning
+    exit 1
 }
 else {
     Write-Status -Text "Operations complete." -Type Success
+    exit 0
 }
