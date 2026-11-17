@@ -26,6 +26,24 @@ Starts, stops, enables, or disables all local Veeam services. Useful for patchin
 .\Manage-VeeamServices.ps1 -Help
 ```
 
+## Console output
+
+Scripts follow a consistent semantic color scheme:
+
+| Color | Meaning |
+| --- | --- |
+| Cyan | Informational output (help text, progress, service counts) |
+| Green | Successful operations and `[ OK ]` status tags |
+| Red | Failed operations, `[FAIL]` status tags, and their error details |
+| Yellow | Warnings and summaries containing failures |
+
+Every colored status also carries a plain-text tag (`[ OK ]` / `[FAIL]`), so output stays readable when redirected to logs or for color-blind users. To turn off coloring entirely, set the `NO_COLOR` environment variable ([no-color.org convention](https://no-color.org/)):
+
+```powershell
+$env:NO_COLOR = '1'
+.\Manage-VeeamServices.ps1 -Stop
+```
+
 ## Requirements
 
 - Windows with PowerShell 5.1+
