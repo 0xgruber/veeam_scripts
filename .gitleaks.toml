@@ -1,0 +1,42 @@
+# veeam_scripts - custom gitleaks rules
+# Built-in gitleaks rules stay active via [extend] useDefault = true.
+# False positives: add lines to .gitleaksignore (format: commit:file:line-number or file:line-number)
+
+[extend]
+useDefault = true
+
+title = "veeam_scripts custom rules"
+
+# Plaintext credential assigned in PowerShell (also matches bash/python style)
+[[rules]]
+id = "script-plaintext-credential"
+description = "Password/secret/token assigned a quoted literal"
+regex = '''(?i)\$?\w*(password|passwd|pwd|secret|apikey|api_key|token|credential)\w*\s*=\s*["'][^"']{8,}["']'''
+tags = ["credential", "script", "powershell"]
+
+  [[rules.allowlist]]
+  stopwords = ["example", "sample", "placeholder", "xxxxx", "changeme", "change-me", "your-password", "yourpassword", "please-change", "dummy", "todo", "redacted"]
+
+# Plaintext passed directly to a secret-style parameter
+[[rules]]
+id = "script-secret-parameter"
+description = "Quoted literal passed to -Token/-Password style parameter"
+regex = '''(?i)-(?:password|pwd|secret|apikey|api-key|token|credential)\s+["'][^"']{8,}["']'''
+tags = ["credential", "script", "powershell"]
+
+  [[rules.allowlist]]
+  stopwords = ["example", "sample", "placeholder", "xxxxx", "changeme", "change-me", "your-password", "yourpassword", "please-change", "dummy", "todo", "redacted"]
+
+# ConvertTo-SecureString fed a plaintext literal
+[[rules]]
+id = "ps-securestring-plaintext"
+description = "Plaintext fed to ConvertTo-SecureString"
+regex = '''(?i)ConvertTo-SecureString\s+["'][^"']{8,}["']'''
+tags = ["credential", "powershell"]
+
+# Internal hostnames in a public repo
+[[rules]]
+id = "internal-fqdn"
+description = "Internal FQDN referenced (recon material in a public repo)"
+regex = '''(?i)\b(?:[a-z0-9-]+\.)+vaultcloud\.local\b'''
+tags = ["internal", "recon"]
